@@ -1,0 +1,584 @@
+# Uploading 3 CSV files into jupyter notebook
+# Importing pandas to read csv files of train, test and ideal function
+
+import pandas as pd
+
+df_train = pd.read_csv("train.csv")
+df_test = pd.read_csv("test.csv")
+df_ideal = pd.read_csv("ideal.csv")
+
+df_train
+
+# Importing mathplotlib to visualize training set 
+# Importing sys to access to system-specific parameters and functions
+# Importing traceback to trace an error back to its source
+
+import matplotlib.pyplot as plt
+from matplotlib import style
+import sys
+import traceback
+
+def trainvisualize():
+    
+    try:
+        for index in range(1,5):
+            axis_y = "y" + str(index)
+            df_train.plot(linewidth = 1, label = axis_y, x = 'x', y = axis_y)    
+            plt.legend()
+            style.use('ggplot')
+            plt.ylabel(axis_y)
+            plt.xlabel('x')
+            plt.title('Training Set')
+        return plt.show()
+    except:      
+        exception_type, exception_value, exception_traceback = sys.exc_info()
+        print("Exception Type: {}\nException Value: {}".format(exception_type, exception_value))
+        file_name, line_number, procedure_name, line_code = traceback.extract_tb(exception_traceback)[-1]
+        print("File Name: {}\nLine Number: {}\nProcedure Name: {}\nLine Code:{}".
+              format(file_name, line_number, procedure_name, line_code))
+    finally:
+        pass
+    
+trainvisualize()
+
+df_test
+
+# Visualizing test set with scatter plot
+
+def testvisualize():
+    
+    try:
+        df_test.plot(kind = 'scatter', linewidth = 0.5, x = 'x', y = 'y')
+        style.use('ggplot')
+        plt.ylabel('y test')
+        plt.xlabel('x test')
+        plt.title('Test Data')
+    except:
+        exception_info = get_exception_info()
+        print(exception_info)
+    else:
+        plt.show()
+
+testvisualize()
+
+df_ideal
+
+# Visualizing the ideal functions
+
+def idealvisualize():
+
+    for i in range(1, 51):
+        if i >= 51:
+            raise Exception("range of i should be between 1 and 50")
+            
+        y_axis = "y" + str(i)
+        df_ideal.plot(linewidth = 1, label = y_axis, x = 'x', y = y_axis)
+        plt.legend()
+        style.use('ggplot')
+        plt.ylabel(y_axis)
+        plt.xlabel('x ideal')
+        plt.title('Ideal Functions')
+        plt.show()
+        
+idealvisualize()
+
+## Load trainsets into separate dfs
+
+# Importing numpy library
+
+import numpy as np
+
+# Separating the training set into 4 variables by pairing the "x" column with the respective "y" columns
+
+df_train_1 = df_train[['x', 'y1']]
+df_train_2 = df_train[['x', 'y2']]
+df_train_3 = df_train[['x', 'y3']]
+df_train_4 = df_train[['x', 'y4']]
+
+ideal_np = df_ideal.to_numpy()          # Converting the pandas dataframe to numpy array for ideal dataframe
+ideal_np = ideal_np[:,1:]               # Taking only y columns of the array
+ideal_np
+
+# Creating MyException user defined exception
+
+class MyException(Exception):
+    def __init___(self, exception_parameter, exception_message):
+        super().__init__(self, exception_parameter, exception_message)
+        
+# Shapes of dataframes (Shape of ideal numpy array, ideal dataframe, train dataframe, test dataframe)        
+
+def shapes():
+    
+    lists = [ideal_np.shape, df_ideal.shape, df_train.shape, df_test.shape]
+    
+    for item in lists:
+        if item not in lists:
+            raise MyException(item, "My exception was raised with exception argument: {}".format(item))    
+    return lists
+    
+shapes()
+
+## Methods
+
+
+## Subtract Method
+
+def subtractTrainFromIdeal(ideal,train_y):
+    """ 
+    This function takes ideal numpy array and y column of the train numpy array. It calculates deviation between train and ideal
+    Since train_y is (400,1) we need to equalize its shape with the ideal matrix in order to subract them.
+    train1_y, train2_y etc. calculations can be found under train set 1, traint set 2 etc. titles in the next codes.
+    """ 
+    
+    # First we need to take number of colums of the ideal matrix
+    num_repetitions = ideal.shape[1]              
+    
+    # Now we used np.tile function to duplicate the matrix to the required amount
+    train_y_tile = np.tile(train_y,(num_repetitions,1))    
+    
+    # Since ideal matrix is originally in the form (50,400) we transpose this to subtract all y train from y targets properly
+    ideal_transpose = np.transpose(ideal)
+    
+    # Finally we do the subtraction and transpose again to bring the matrix back to its original format
+    sub = ideal_transpose - train_y_tile
+    sub = np.transpose(sub)
+    
+    return sub
+
+## Square Method
+
+def squareMatrix(sub):
+    """
+    In this function, np.square function is used to calculate square of deviation
+    """
+
+    squared_subs = np.square(sub)  
+    
+    return squared_subs
+
+## Sum Method
+
+def sumMatrix(square):
+    """
+    In this function, np.sum function is used to calculate sum of square deviations
+    """
+
+    sum_array = np.sum(square, axis = 0)
+    
+    return sum_array
+
+## Min Method
+
+def minMatrix(sum_array):
+    """
+    In this function, np.argmin and np.min funcstions are used to calculate minimum value and indice of that value
+    It gives minimum of sum of square deviations (Least square result)
+    """
+    
+    # We use argmin which returns the indices of the minimum values, we add +1 because numpy arrays starts in indice 0
+    argmin = np.argmin(sum_array) + 1
+    
+    # We use min which returns minimum of an array
+    min_array = np.min(sum_array)
+    
+    return argmin, min_array
+
+## train set 1
+
+
+train1 = df_train_1.to_numpy()
+train1_y = train1[:,1]
+
+sub1 = subtractTrainFromIdeal(ideal_np,train1_y)
+sub1
+
+train1_y.shape
+
+square1 = squareMatrix(sub1)
+square1
+
+sum_array1 = sumMatrix(square1)
+sum_array1
+
+min1 = minMatrix(sum_array1)
+min1
+
+## train set 2
+
+train2 = df_train_2.to_numpy()
+train2_y = train2[:,1]
+
+sub2 = subtractTrainFromIdeal(ideal_np,train2_y)
+sub2
+
+train2_y.shape
+
+square2 = squareMatrix(sub2)
+square2
+
+sum_array2 = sumMatrix(square2)
+sum_array2
+
+min2 = minMatrix(sum_array2)
+min2
+
+## train set 3
+
+train3 = df_train_3.to_numpy()
+train3_y = train3[:,1]
+
+sub3 = subtractTrainFromIdeal(ideal_np,train3_y)
+sub3
+
+train3_y.shape
+
+square3 = squareMatrix(sub3)
+square3
+
+sum_array3 = sumMatrix(square3)
+sum_array3
+
+min3 = minMatrix(sum_array3)
+min3
+
+## train set 4
+
+train4 = df_train_4.to_numpy()
+train4_y = train4[:,1]
+
+sub4 = subtractTrainFromIdeal(ideal_np,train4_y)
+sub4
+
+train4_y.shape
+
+square4 = squareMatrix(sub4)
+square4
+
+sum_array4 = sumMatrix(square4)
+sum_array4
+
+min4 = minMatrix(sum_array4)
+min4
+
+# Changing name of "y" column to "y test" in order not to interfere with y column of ideal function
+
+df_test = df_test.rename(columns = {"y": "y test"})
+df_test
+
+## Methods Continue
+
+## Fitting Method
+
+def fitting(ideals):
+    """
+    This function first merges df_ideal functions with df_test from their common x values. Then, it is constructing a new column
+    which is showing deviation of y test and y ideal columns. Finally, it is selecting values which are smaller than sqrt(2)
+    """
+    
+    # Merging df_ideal_42 and df_test to see in which "x" values to they intersect
+    # This is needed for calculating deviation between each df_ideal and df_test
+    intersect_test_ideal = pd.merge(df_test, ideals, how = 'inner', on = ['x'])
+    
+    # Calculating abs deviation between each df_ideal and df_test and showing the result in column creating "ytest - y ideal"
+    intersect_test_ideal['ytest - y ideal'] = abs(intersect_test_ideal['y ideal'] - intersect_test_ideal['y test'])
+    
+    # Selecting values which are smaller than sqrt(2) because we want all points that are "close enough" to ideal functions
+    result_intersect_test_ideal = intersect_test_ideal[intersect_test_ideal['ytest - y ideal'] < np.sqrt(2)] 
+    
+    return result_intersect_test_ideal
+
+## Fitting test set to Ideal Function 42
+
+# Selecting "x" and "y42" columns from df_ideal to compare these values with y test
+# Changing name of "y42" to "y ideal" to make operations in the fitting function above
+
+df_ideal_42 = df_ideal[["x", "y42"]]
+df_ideal_42 = df_ideal_42.rename(columns = {"y42": "y ideal"})
+
+fitting(df_ideal_42)
+
+# Visualizing fitting(df_ideal_42)
+
+def fitting42():
+    
+    try:
+        fitting(df_ideal_42).plot(linewidth = 1, x = 'x', y = "ytest - y ideal")    
+        plt.legend()
+        style.use('ggplot')
+        plt.ylabel("ytest - y42")
+        plt.xlabel('x axis')
+        plt.title('Ideal Functions')
+    except:
+        exception_info = get_exception_info()
+        print(exception_info)
+    else:
+        plt.show()
+        
+fitting42()
+
+## Fitting test set to Ideal Function 41
+
+# Selecting "x" and "y41" columns from df_ideal to compare these values with y test
+# Changing name of "y41" to "y ideal" to make operations in the fitting function above
+
+df_ideal_41 = df_ideal[["x", "y41"]]
+df_ideal_41 = df_ideal_41.rename(columns = {"y41": "y ideal"})
+
+fitting(df_ideal_41)
+
+# Visualizing fitting(df_ideal_41)
+
+def fitting41():
+    
+    try:
+        fitting(df_ideal_41).plot(linewidth = 1, x = 'x', y = "ytest - y ideal")  
+        plt.legend()
+        style.use('ggplot')
+        plt.ylabel("ytest - y41")
+        plt.xlabel('x axis')
+        plt.title('Ideal Functions')
+        plt.show()  
+    except:
+        exception_info = get_exception_info()
+        print(exception_info)      
+    finally:
+        pass
+    
+fitting41()
+
+## Fitting test set to Ideal Function 11
+
+# Selecting "x" and "y41" columns from df_ideal to compare these values with y test
+# Changing name of "y41" to "y ideal" to make operations in the fitting function above
+
+df_ideal_11 = df_ideal[["x", "y11"]]
+df_ideal_11 = df_ideal_11.rename(columns = {"y11": "y ideal"})
+
+fitting(df_ideal_11)
+
+# Visualizing fitting(df_ideal_11)
+
+def fitting11():
+    
+    try:
+        fitting(df_ideal_11).plot(linewidth = 1, x = 'x', y = "ytest - y ideal")
+        plt.legend()
+        style.use('ggplot')
+        plt.ylabel("ytest - y11")
+        plt.xlabel('x axis')
+        plt.title('Ideal Functions')
+        plt.show()      
+    except:      
+        exception_type, exception_value, exception_traceback = sys.exc_info()
+        print("Exception Type: {}\nException Value: {}".format(exception_type, exception_value))
+        file_name, line_number, procedure_name, line_code = traceback.extract_tb(exception_traceback)[-1]
+        print("File Name: {}\nLine Number: {}\nProcedure Name: {}\nLine Code:{}".
+              format(file_name, line_number, procedure_name, line_code))
+    finally:
+        pass
+    
+fitting11()
+
+## Fitting test set to Ideal Function 48
+
+# Selecting "x" and "y48" columns from df_ideal to compare these values with y test
+# Changing name of "y48" to "y ideal" to make operations in the fitting function above
+
+df_ideal_48 = df_ideal[["x", "y48"]]
+df_ideal_48 = df_ideal_48.rename(columns = {"y48": "y ideal"})
+
+fitting(df_ideal_48)
+
+# Visualizing fitting(df_ideal_48)
+
+def fitting48():
+    try:   
+        fitting(df_ideal_48).plot(linewidth = 1, x = 'x', y = "ytest - y ideal")    
+        plt.legend()
+        style.use('ggplot')
+        plt.ylabel("ytest - y48")
+        plt.xlabel('x axis')
+        plt.title('Ideal Functions')
+        plt.show()
+    except:
+        raise Exception("Exception was raised")
+        
+fitting48()        
+
+# Creating MyIndexError user defined exception
+
+class MyIndexError(IndexError):
+    def __init___(self, indec_parameter, index_message):
+        super().__init__(self, index_parameter, index_message)
+
+# Number of test data which can be fitted to each ideal function
+
+def count_row():
+    count_row_test_ideal42 = fitting(df_ideal_42).shape[0] 
+    count_row_test_ideal41 = fitting(df_ideal_41).shape[0] 
+    count_row_test_ideal11 = fitting(df_ideal_11).shape[0]
+    count_row_test_ideal48 = fitting(df_ideal_48).shape[0]
+    count_list = [count_row_test_ideal42, count_row_test_ideal41, count_row_test_ideal11, count_row_test_ideal48]
+    for i in count_list:
+        if i not in count_list:
+            raise MyIndexError(i, "My index error was raised with error argument: {}".format(i)) 
+        
+    return 
+print("I have", count_row_test_ideal42, "test data which can be fitted to ideal function 42"),
+print("I have", count_row_test_ideal41, "test data which can be fitted to ideal function 41"),
+print("I have", count_row_test_ideal11, "test data which can be fitted to ideal function 11"),
+print("I have", count_row_test_ideal48, "test data which can be fitted to ideal function 48")
+
+count_row()
+
+# Saving found n test data for each ideal function in a dictionary
+
+Found_test_data = {"Number of rows for test data which can be fitted to ideal function 42" : count_row_test_ideal42,
+     "Number of rows for test data which can be fitted to ideal function 41" : count_row_test_ideal41,
+     "Number of rows for test data which can be fitted to ideal function 11" : count_row_test_ideal11,
+     "Number of rows for test data which can be fitted to ideal function 48" : count_row_test_ideal48}
+
+Found_test_data
+
+## Unittests
+
+# Importing unittest to check subract, square, sum, min, fitting methods
+
+import unittest
+
+class MathOperations(object):
+    
+    def math_subtract(self, subtract1, subtract2):
+        '''
+        provide subtract of array, unittest for subtract method
+        return: subtract
+        '''
+        subtraction = subtract1 - subtract2
+        return subtraction
+    
+    def math_square(self, square1):
+        '''
+        provide square of array, unittest for square method
+        return: square
+        '''
+        squared_sub = np.square(square1)
+        return squared_sub
+    
+    def math_sum(self, sum1):
+        '''
+        provide sum of array, unittest for sum method
+        return: sum
+        '''
+        sum_arrays = np.sum(sum1, axis = 0)
+        return sum_arrays
+    
+    def math_min(self, min1):
+        '''
+        provide minimum of array, unittest for min method
+        return: minimum
+        '''
+        min_arrays = np.min(min1)
+        argmins = np.argmin(min1)
+        return min_arrays,argmins
+    
+    def math_absolutedeviation(self, dif1, dif2):
+        '''
+        provide absolutedeviation of dataframe, unittest for absolutedeviation method
+        return: absolutedeviation
+        '''
+        difs = abs(dif1 - dif2)
+        return difs
+    
+    def math_smallersqrt2(self, a1):
+        '''
+        provide absolute deviation of dataframe, unittest for absolutedeviation method
+        return: absolute deviation
+        '''
+        smallerthensqrt2 = a1 < np.sqrt(2)
+        return smallerthensqrt2
+    
+class UnitTestMathOperations(unittest.TestCase):
+    
+    def test_subtract(self):
+        '''
+        test math subtract of array
+        '''
+        math_operations = MathOperations()
+        result = math_operations.math_subtract(2,2)
+        self.assertEqual(result, 0, "The subtraction should be 0")
+    
+    def test_square(self):
+        '''
+        test math square of array
+        '''
+        math_operations = MathOperations()
+        result = math_operations.math_square([2])
+        self.assertEqual(result, [4], "The square should be 4")
+        
+    def test_sum(self):
+        '''
+        test math sum of array
+        '''
+        math_operations = MathOperations()
+        result = math_operations.math_sum([2,1])
+        self.assertEqual(result, [3], "The sum should be 3")
+        
+    def test_min(self):
+        '''
+        test math minimum of array
+        '''
+        math_operations = MathOperations()
+        result = math_operations.math_min([2,1])
+        self.assertEqual(result, (1,1), "The minimum should be 1,1")
+        
+    def test_absolutedeviation(self):
+        '''
+        test math absolute deviation of dataframe
+        '''
+        math_operations = MathOperations()
+        result = math_operations.math_absolutedeviation(2,2)
+        self.assertEqual(result, 0, "The subtraction should be 0")
+        
+    def test_smallersqrt2(self):
+        '''
+        test math subtract of array
+        '''
+        math_operations = MathOperations()
+        result = math_operations.math_smallersqrt2(0)
+        self.assertTrue(result, True)
+        
+        
+unittest.main(argv = ['first-arg-is-ignored'], exit = False)
+
+# Creating the training data's database table in MySQL database using sqlachemy in Python
+
+import sqlalchemy as db
+import pymysql
+
+engine = db.create_engine("mysql+pymysql://erkut245:Ex74k8_ujsa@localhost/SQLite")
+connection = engine.connect()
+meta_data = db.MetaData()
+
+df_train.to_sql("train_table", connection, if_exists = "replace")
+
+# Creating the ideal functions’ database table in MySQL database using sqlachemy in Python
+
+import sqlalchemy as db
+import pymysql
+
+engine = db.create_engine("mysql+pymysql://erkut245:Ex74k8_ujsa@localhost/SQLite")
+connection = engine.connect()
+meta_data = db.MetaData()
+
+df_ideal.to_sql("ideal_table", connection, if_exists = "replace")
+
+# Creating the database table of the test-data, with mapping and y-deviation in MySQL database using sqlachemy in Python
+
+import sqlalchemy as db
+import pymysql
+
+engine = db.create_engine("mysql+pymysql://erkut245:Ex74k8_ujsa@localhost/SQLite")
+connection = engine.connect()
+meta_data = db.MetaData()
+
+fitting(df_ideal_11).to_sql("test_ideal11_table", connection, if_exists = "replace")
