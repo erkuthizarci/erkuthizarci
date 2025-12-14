@@ -1,6 +1,6 @@
 - 👋 Hi, I’m @erkuthizarci
 - 👀 I’m interested in Data Science
-- 🌱 I’m currently learning Master of Data Science
+- 🌱 I’m graduated from Master of Science Data Science
 - 💞️ I’m looking to collaborate on ...
 - 📫 How to reach me erkuthizarci96@gmail.com
 
