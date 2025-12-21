@@ -1,7 +1,7 @@
 # Hi, I'm Erkut Hızarcı 👋 
 ### Data Engineer | M.Sc. Data Science Student @ IU International University
 
-Experienced Data Engineer and Analyst with a strong foundation in statistical analysis, ETL processes, ML, and data visualization. Recent M.Sc. in Data Science graduate.
+Experienced Data Engineer and Analyst with a strong foundation in statistical analysis, ETL processes, ML, and data visualization. Recently graduated from M.Sc. in Data Science @ IU International University.
 
 ---
 
